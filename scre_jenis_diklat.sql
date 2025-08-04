@@ -1,0 +1,2 @@
+-- Silakan import file scre_jenis_diklat.sql yang sudah Anda download ke database Anda.
+-- File ini dipindahkan ke dalam folder project sesuai permintaan user.

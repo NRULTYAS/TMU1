@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EXTREME TEST - TANGGAL MODE</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .forced { background: yellow; padding: 10px; border: 2px solid red; margin: 10px 0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>EXTREME TEST - TANGGAL MODE ONLY</h1>
+    
+    <div class="forced">
+        <h2>🚨 FORCE MODE AKTIF 🚨</h2>
+        <p>Halaman ini DIPAKSA menggunakan mode TANGGAL tanpa kondisi apapun</p>
+    </div>
+    
+    <div id="test-area">
+        <h3 id="main-heading">LOADING...</h3>
+        <p id="main-description">LOADING...</p>
+        <select id="gelombang-select">
+            <option>LOADING...</option>
+        </select>
+    </div>
+    
+    <div id="debug">
+        <h3>Debug Log:</h3>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        function log(msg) {
+            const logDiv = document.getElementById('log');
+            const p = document.createElement('p');
+            p.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+            logDiv.appendChild(p);
+            console.log(msg);
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+        
+        window.onload = function() {
+            log('🚨 EXTREME MODE STARTED 🚨');
+            
+            // FORCE UI ELEMENTS IMMEDIATELY
+            document.getElementById('main-heading').innerHTML = '📅 TANGGAL MODE DIPAKSA';
+            document.getElementById('main-description').textContent = 'MODE TANGGAL DIPAKSA - TIDAK ADA GELOMBANG!';
+            
+            log('UI elements set to TANGGAL mode');
+            
+            // Get diklat ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const diklatId = urlParams.get('diklat_id') || '683-31450-18-57';
+            log('Using diklat ID: ' + diklatId);
+            
+            // Call API
+            const apiUrl = 'http://localhost/tugas1_tmu1/pendaftaran/get_periode_list/' + diklatId;
+            log('Calling API: ' + apiUrl);
+            
+            fetch(apiUrl)
+                .then(response => {
+                    log('API response status: ' + response.status);
+                    return response.json();
+                })
+                .then(response => {
+                    log('API returned use_gelombang: ' + response.use_gelombang + ' (IGNORED)');
+                    log('Data length: ' + (response.data ? response.data.length : 0));
+                    
+                    const data = response.data || [];
+                    const select = document.getElementById('gelombang-select');
+                    
+                    // ALWAYS USE TANGGAL MODE
+                    let options = '<option value="">-- PILIH TANGGAL (FORCED) --</option>';
+                    
+                    if (data.length > 0) {
+                        const validData = data.filter(item => 
+                            item.kouta > 0 && 
+                            item.is_exist == 1 && 
+                            item.pelaksanaan_mulai && 
+                            item.pelaksanaan_akhir
+                        );
+                        
+                        log('Valid data count: ' + validData.length);
+                        
+                        validData.forEach(item => {
+                            const startDate = formatDate(item.pelaksanaan_mulai);
+                            const endDate = formatDate(item.pelaksanaan_akhir);
+                            const dateRange = startDate + ' - ' + endDate;
+                            options += '<option value="' + item.periode + '">📅 ' + dateRange + ' (Periode ' + item.periode + ')</option>';
+                        });
+                        
+                        log('Generated ' + validData.length + ' TANGGAL options');
+                    }
+                    
+                    select.innerHTML = options;
+                    log('🚨 EXTREME MODE SUCCESS: DROPDOWN SET TO TANGGAL 🚨');
+                })
+                .catch(error => {
+                    log('❌ ERROR: ' + error.message);
+                });
+        };
+    </script>
+</body>
+</html>

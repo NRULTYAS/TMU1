@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript Boolean Test</title>
+</head>
+<body>
+    <h1>JavaScript Boolean Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        // Test dengan data yang sama seperti API
+        const testData = {
+            "total_periode": 542,
+            "use_gelombang": false
+        };
+        
+        console.log('Test data:', testData);
+        console.log('use_gelombang value:', testData.use_gelombang);
+        console.log('Type:', typeof testData.use_gelombang);
+        console.log('use_gelombang === true:', testData.use_gelombang === true);
+        console.log('use_gelombang === false:', testData.use_gelombang === false);
+        
+        let mode = '';
+        if (testData.use_gelombang === true) {
+            mode = 'GELOMBANG MODE';
+            console.log('👆 ENTERING GELOMBANG MODE');
+        } else {
+            mode = 'TANGGAL MODE';
+            console.log('📅 ENTERING TANGGAL MODE');
+        }
+        
+        document.getElementById('result').innerHTML = `
+            <p><strong>Total Periode:</strong> ${testData.total_periode}</p>
+            <p><strong>use_gelombang:</strong> ${testData.use_gelombang}</p>
+            <p><strong>Type:</strong> ${typeof testData.use_gelombang}</p>
+            <p><strong>Mode:</strong> ${mode}</p>
+        `;
+        
+        // Test real API
+        fetch('http://localhost/tugas1_tmu1/pendaftaran/get_periode_list/72-65046-33')
+            .then(response => response.json())
+            .then(data => {
+                console.log('=== REAL API TEST ===');
+                console.log('API Response:', data);
+                console.log('use_gelombang value:', data.use_gelombang);
+                console.log('Type:', typeof data.use_gelombang);
+                console.log('use_gelombang === true:', data.use_gelombang === true);
+                console.log('use_gelombang === false:', data.use_gelombang === false);
+                
+                let apiMode = '';
+                if (data.use_gelombang === true) {
+                    apiMode = 'GELOMBANG MODE';
+                    console.log('👆 API ENTERING GELOMBANG MODE');
+                } else {
+                    apiMode = 'TANGGAL MODE';
+                    console.log('📅 API ENTERING TANGGAL MODE');
+                }
+                
+                document.getElementById('result').innerHTML += `
+                    <hr>
+                    <h2>Real API Test</h2>
+                    <p><strong>Total Periode:</strong> ${data.total_periode}</p>
+                    <p><strong>use_gelombang:</strong> ${data.use_gelombang}</p>
+                    <p><strong>Type:</strong> ${typeof data.use_gelombang}</p>
+                    <p><strong>Mode:</strong> ${apiMode}</p>
+                `;
+            });
+    </script>
+</body>
+</html>

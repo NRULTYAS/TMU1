@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Tanggal Pendaftaran - Database Driven</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #e3f2fd; }
+        .container { background: white; padding: 20px; border-radius: 10px; max-width: 900px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(45deg, #2196f3, #03a9f4); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .result { background: #e8f5e8; padding: 15px; margin: 10px 0; border-left: 5px solid #4caf50; border-radius: 5px; }
+        .debug { background: #fff8e1; padding: 12px; margin: 8px 0; border-left: 4px solid #ffc107; font-family: monospace; font-size: 14px; border-radius: 3px; }
+        .error { background: #ffebee; border-left-color: #f44336; }
+        .success { background: #e8f5e8; border-left-color: #4caf50; }
+        select { width: 100%; padding: 15px; font-size: 16px; margin: 15px 0; border: 2px solid #2196f3; border-radius: 8px; }
+        .date-info { background: #f3e5f5; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #9c27b0; }
+        .priority { background: #e1f5fe; padding: 10px; margin: 5px 0; border-left: 3px solid #01579b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Test Tanggal Pendaftaran dari Database</h1>
+            <p><strong>Tujuan:</strong> Menampilkan tanggal pendaftaran_mulai s/d pendaftaran_akhir</p>
+        </div>
+        
+        <div class="priority">
+            <h3>🎯 Prioritas Tanggal:</h3>
+            <ol>
+                <li><strong>Utama:</strong> pendaftaran_mulai → pendaftaran_akhir</li>
+                <li><strong>Fallback:</strong> pelaksanaan_mulai → pelaksanaan_akhir</li>
+                <li><strong>Terakhir:</strong> "Tanggal akan ditentukan"</li>
+            </ol>
+        </div>
+        
+        <div class="result">
+            <h3>📋 Hasil Dropdown:</h3>
+            <select id="test-dropdown">
+                <option>🔄 Loading data...</option>
+            </select>
+        </div>
+        
+        <div class="date-info">
+            <h3>📊 Analisis Data:</h3>
+            <div id="date-analysis">Loading...</div>
+        </div>
+        
+        <div id="debug-logs"></div>
+    </div>
+    
+    <script>
+        function addDebug(message, type = 'debug') {
+            const debugDiv = document.getElementById('debug-logs');
+            const div = document.createElement('div');
+            div.className = 'debug ' + type;
+            div.innerHTML = '<strong>' + new Date().toLocaleTimeString() + ':</strong> ' + message;
+            debugDiv.appendChild(div);
+            console.log(message);
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return null;
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return null;
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        async function testRegistrationDates() {
+            addDebug('🚀 Starting registration dates test');
+            
+            try {
+                const diklatId = '59-01825-89';
+                const response = await fetch(`http://localhost/tugas1_tmu1/pendaftaran/get_periode_list/${diklatId}`);
+                
+                addDebug('📡 API Response: ' + response.status + ' for diklat ' + diklatId);
+                
+                const result = await response.json();
+                const data = result.data || [];
+                
+                // Analyze data structure
+                let analysisHTML = '<h4>Data Structure Analysis:</h4>';
+                analysisHTML += '<p><strong>Total items:</strong> ' + data.length + '</p>';
+                
+                if (data.length > 0) {
+                    const sample = data[0];
+                    analysisHTML += '<h5>Sample item fields:</h5><ul>';
+                    Object.keys(sample).forEach(key => {
+                        const value = sample[key];
+                        if (key.includes('pendaftaran') || key.includes('pelaksanaan')) {
+                            analysisHTML += '<li><strong>' + key + ':</strong> ' + value + '</li>';
+                        }
+                    });
+                    analysisHTML += '</ul>';
+                    
+                    // Count items by date availability
+                    const withRegDates = data.filter(item => item.pendaftaran_mulai && item.pendaftaran_akhir);
+                    const withExecDates = data.filter(item => item.pelaksanaan_mulai && item.pelaksanaan_akhir);
+                    const withValidData = data.filter(item => item.kouta > 0 && item.is_exist == 1);
+                    
+                    analysisHTML += '<h5>Date Availability:</h5>';
+                    analysisHTML += '<p>✅ With registration dates: ' + withRegDates.length + '</p>';
+                    analysisHTML += '<p>🔄 With execution dates: ' + withExecDates.length + '</p>';
+                    analysisHTML += '<p>📊 Valid data (kouta > 0): ' + withValidData.length + '</p>';
+                }
+                
+                document.getElementById('date-analysis').innerHTML = analysisHTML;
+                
+                // Build dropdown with priority logic
+                const dropdown = document.getElementById('test-dropdown');
+                let options = '<option value="">-- Pilih Periode Pendaftaran --</option>';
+                
+                if (data.length > 0) {
+                    // Priority 1: Registration dates
+                    const withRegDates = data.filter(item => 
+                        item.kouta > 0 && 
+                        item.is_exist == 1 && 
+                        item.pendaftaran_mulai && 
+                        item.pendaftaran_akhir
+                    );
+                    
+                    // Priority 2: Execution dates
+                    const withExecDates = data.filter(item => 
+                        item.kouta > 0 && 
+                        item.is_exist == 1 && 
+                        item.pelaksanaan_mulai && 
+                        item.pelaksanaan_akhir
+                    );
+                    
+                    // Priority 3: Any valid data
+                    const validGeneral = data.filter(item => 
+                        item.kouta > 0 && 
+                        item.is_exist == 1
+                    );
+                    
+                    let finalData = [];
+                    let strategy = '';
+                    
+                    if (withRegDates.length > 0) {
+                        finalData = withRegDates;
+                        strategy = 'Registration dates (BEST)';
+                    } else if (withExecDates.length > 0) {
+                        finalData = withExecDates;
+                        strategy = 'Execution dates (Fallback)';
+                    } else if (validGeneral.length > 0) {
+                        finalData = validGeneral;
+                        strategy = 'General valid (No dates)';
+                    }
+                    
+                    addDebug('🎯 Using strategy: ' + strategy + ' (' + finalData.length + ' items)');
+                    
+                    if (finalData.length > 0) {
+                        finalData.forEach(item => {
+                            // Priority 1: Registration dates
+                            let startDate = formatDate(item.pendaftaran_mulai);
+                            let endDate = formatDate(item.pendaftaran_akhir);
+                            let dateType = 'PENDAFTARAN';
+                            
+                            // Priority 2: Execution dates
+                            if (!startDate || !endDate) {
+                                startDate = formatDate(item.pelaksanaan_mulai);
+                                endDate = formatDate(item.pelaksanaan_akhir);
+                                dateType = 'PELAKSANAAN';
+                            }
+                            
+                            // Priority 3: Dummy dates
+                            if (!startDate || !endDate) {
+                                const dateText = 'Tanggal akan ditentukan';
+                                options += '<option value="' + item.periode + '">📅 ' + dateText + ' (Periode ' + item.periode + ')</option>';
+                                addDebug('📝 Periode ' + item.periode + ': Using dummy dates');
+                            } else {
+                                const dateRange = startDate + ' - ' + endDate;
+                                options += '<option value="' + item.periode + '">📅 ' + dateRange + ' (Periode ' + item.periode + ' - ' + dateType + ')</option>';
+                                addDebug('📅 Periode ' + item.periode + ': ' + dateType + ' dates - ' + dateRange);
+                            }
+                        });
+                        
+                        addDebug('🎉 SUCCESS: Dropdown built with ' + finalData.length + ' options', 'success');
+                    } else {
+                        options += '<option value="">❌ No valid data</option>';
+                        addDebug('❌ No valid data found', 'error');
+                    }
+                } else {
+                    options += '<option value="">❌ No data from API</option>';
+                    addDebug('❌ No data from API', 'error');
+                }
+                
+                dropdown.innerHTML = options;
+                
+                // Count results
+                const registrationCount = (options.match(/PENDAFTARAN/g) || []).length;
+                const executionCount = (options.match(/PELAKSANAAN/g) || []).length;
+                const dummyCount = (options.match(/akan ditentukan/g) || []).length;
+                
+                addDebug('📊 FINAL RESULT:', 'success');
+                addDebug('   🎯 Registration dates: ' + registrationCount, 'success');
+                addDebug('   🔄 Execution dates: ' + executionCount, 'success');
+                addDebug('   📝 Dummy dates: ' + dummyCount, 'success');
+                
+            } catch (error) {
+                addDebug('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Start test when page loads
+        window.onload = testRegistrationDates;
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Test - Tanggal Mode</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .debug-box { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 5px; 
+            padding: 15px; 
+            margin: 10px 0; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Final Test - Mode Tanggal</h1>
+        <p><strong>Diklat ID:</strong> <span id="current-diklat">-</span></p>
+        
+        <div class="debug-box">
+            <h4>Test Results</h4>
+            <div id="test-results">Testing...</div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <h3 id="main-heading">
+                    <i class="fas fa-calendar-alt text-success me-2"></i>Tentukan Tanggal
+                </h3>
+                <p id="main-description">Silakan pilih tanggal yang kamu minati untuk melanjutkan proses pendaftaran</p>
+                
+                <div class="mb-3">
+                    <label id="dropdown-label" class="form-label">
+                        <i class="fas fa-calendar-alt me-2"></i>Pilih Tanggal Pelaksanaan
+                    </label>
+                    <select id="gelombang-select" class="form-select">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const diklatId = urlParams.get('diklat_id') || '683-31450-18-57';
+        const testResults = document.getElementById('test-results');
+        const currentDiklatEl = document.getElementById('current-diklat');
+        
+        currentDiklatEl.textContent = diklatId;
+        
+        function addTestResult(message, isSuccess = true) {
+            const p = document.createElement('p');
+            p.className = isSuccess ? 'success' : 'error';
+            p.textContent = message;
+            testResults.appendChild(p);
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+        
+        async function testAPI() {
+            addTestResult('Starting API test...', true);
+            
+            try {
+                const response = await fetch(`http://localhost/tugas1_tmu1/pendaftaran/get_periode_list/${diklatId}`);
+                addTestResult('API response received (status: ' + response.status + ')', true);
+                
+                const result = await response.json();
+                addTestResult('JSON parsed successfully', true);
+                
+                // Test the boolean value
+                const useGelombang = result.use_gelombang;
+                addTestResult('use_gelombang value: ' + useGelombang + ' (type: ' + typeof useGelombang + ')', true);
+                
+                if (useGelombang === false) {
+                    addTestResult('✓ Boolean comparison works: useGelombang === false is TRUE', true);
+                } else {
+                    addTestResult('✗ Boolean comparison failed: useGelombang === false is FALSE', false);
+                }
+                
+                // Check data
+                const data = result.data || [];
+                addTestResult('Data array length: ' + data.length, true);
+                
+                if (data.length > 0) {
+                    const validData = data.filter(item => 
+                        item.kouta > 0 && 
+                        item.is_exist == 1 && 
+                        item.pelaksanaan_mulai && 
+                        item.pelaksanaan_akhir
+                    );
+                    addTestResult('Valid data items: ' + validData.length, true);
+                    
+                    // Update dropdown
+                    let options = '<option value="">-- Pilih Tanggal Pelaksanaan --</option>';
+                    
+                    validData.forEach(item => {
+                        const startDate = formatDate(item.pelaksanaan_mulai);
+                        const endDate = formatDate(item.pelaksanaan_akhir);
+                        const dateRange = `${startDate} - ${endDate}`;
+                        options += `<option value="${item.periode}">${dateRange} (Periode ${item.periode})</option>`;
+                    });
+                    
+                    document.getElementById('gelombang-select').innerHTML = options;
+                    addTestResult('✓ Dropdown updated with ' + validData.length + ' date options', true);
+                    
+                    // Check if UI elements exist and have correct content
+                    const heading = document.getElementById('main-heading');
+                    const description = document.getElementById('main-description');
+                    const label = document.getElementById('dropdown-label');
+                    
+                    if (heading && heading.textContent.includes('Tentukan Tanggal')) {
+                        addTestResult('✓ Heading shows "Tentukan Tanggal"', true);
+                    } else {
+                        addTestResult('✗ Heading does not show "Tentukan Tanggal"', false);
+                    }
+                    
+                    if (description && description.textContent.includes('pilih tanggal')) {
+                        addTestResult('✓ Description mentions "pilih tanggal"', true);
+                    } else {
+                        addTestResult('✗ Description does not mention "pilih tanggal"', false);
+                    }
+                    
+                    if (label && label.textContent.includes('Pilih Tanggal Pelaksanaan')) {
+                        addTestResult('✓ Label shows "Pilih Tanggal Pelaksanaan"', true);
+                    } else {
+                        addTestResult('✗ Label does not show "Pilih Tanggal Pelaksanaan"', false);
+                    }
+                    
+                } else {
+                    addTestResult('No valid data available', false);
+                }
+                
+            } catch (error) {
+                addTestResult('Error: ' + error.message, false);
+            }
+        }
+        
+        // Start test when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            testAPI();
+        });
+    </script>
+</body>
+</html>

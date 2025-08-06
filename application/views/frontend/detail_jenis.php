@@ -123,12 +123,6 @@
                         <a class="nav-link" href="#">AIRIS Mobile</a>
                     </li>
                 </ul>
-                
-                <div class="d-flex">
-                    <a href="<?= base_url('login') ?>" class="btn btn-primary me-2">
-                        <i class="fas fa-sign-in-alt me-2"></i>Login
-                    </a>
-                </div>
             </div>
         </div>
     </nav>

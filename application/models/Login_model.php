@@ -13,13 +13,17 @@ class Login_model extends CI_Model {
         if ($query->num_rows() == 1) {
             $user = $query->row();
 
-            // Cek password (plain text)
-            // GANTI INI jika menggunakan password_hash!
-            if ($user->password == $password) {
+            // Cek password - support both plain text dan hashed
+            if (password_verify($password, $user->password) || $user->password == $password) {
                 return $user;
             }
         }
 
         return false; // Login gagal
+    }
+    
+    public function register_user($data)
+    {
+        return $this->db->insert('scre_user', $data);
     }
 }

@@ -132,7 +132,7 @@
                     <a href="<?= base_url('login') ?>" class="btn btn-primary me-2">
                         <i class="fas fa-sign-in-alt me-2"></i>Login Admin
                     </a>
-                    <a href="<?= base_url('pendaftaran') ?>" class="btn btn-outline-primary">
+                    <a href="<?= base_url('daftar') ?>" class="btn btn-outline-primary">
                         <i class="fas fa-user-plus me-2"></i>Daftar
                     </a>
                 </div>
@@ -161,7 +161,7 @@
                                     <a href="#kategori" class="btn btn-light">
                                         <i class="fas fa-search me-2"></i>Lihat Program
                                     </a>
-                                    <a href="<?= base_url('pendaftaran') ?>" class="btn btn-outline-light">
+                                    <a href="<?= base_url('daftar') ?>" class="btn btn-outline-light">
                                         <i class="fas fa-edit me-2"></i>Daftar Sekarang
                                     </a>
                                 </div>
@@ -205,7 +205,7 @@
                                     <a href="<?= base_url('home/contact') ?>" class="btn btn-light">
                                         <i class="fas fa-phone me-2"></i>Hubungi Kami
                                     </a>
-                                    <a href="<?= base_url('pendaftaran') ?>" class="btn btn-outline-light">
+                                    <a href="<?= base_url('daftar') ?>" class="btn btn-outline-light">
                                         <i class="fas fa-user-plus me-2"></i>Bergabung Sekarang
                                     </a>
                                 </div>
@@ -255,7 +255,7 @@
                                     <br><small class="text-muted ms-4">Program pembentukan pelaut profesional</small>
                                 </div>
                                 <a href="<?= base_url('pendaftaran') ?>" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i>Lihat
+                                    <i class="fas fa-eye me-1"></i>Lihat Program
                                 </a>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -265,7 +265,7 @@
                                     <br><small class="text-muted ms-4">Program peningkatan keterampilan</small>
                                 </div>
                                 <a href="<?= base_url('pendaftaran') ?>" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i>Lihat
+                                    <i class="fas fa-eye me-1"></i>Lihat Program
                                 </a>
                             </div>
                             <div class="list-group-item d-flex justify-content-between align-items-center">

@@ -8,7 +8,7 @@ class Pendaftaran_New extends CI_Controller {
         $this->load->helper('url');
     }
 
-    // URL: /pendaftaran (default page)
+    // URL: /pendaftaran (default page - redirect to first available diklat)
     public function index() 
     {
         // Check if diklat_id is provided via query string
@@ -20,24 +20,40 @@ class Pendaftaran_New extends CI_Controller {
             return;
         }
         
-        // Otherwise show all diklat list
-        $this->load->model('Diklat_model');
+        // Get first available diklat and redirect to it
+        $first_diklat = $this->db->get_where('scre_diklat', ['is_exist' => 1], 1)->row();
         
-        // Get all diklat with schedule count
-        $data['diklat_list'] = $this->Diklat_model->get_all_diklat_with_jadwal();
+        if ($first_diklat) {
+            // Redirect to first available diklat
+            redirect('pendaftaran/' . $first_diklat->id);
+        } else {
+            // If no diklat available, show error
+            show_error('Tidak ada program diklat yang tersedia saat ini.');
+        }
+    }
+    
+    // URL: /pendaftaran/form - langsung ke form pendaftaran dengan diklat pertama
+    public function form_direct() 
+    {
+        // Get first available diklat
+        $first_diklat = $this->db->get_where('scre_diklat', ['is_exist' => 1], 1)->row();
         
-        // Calculate statistics
-        $data['total_jadwal'] = 0;
-        $data['diklat_aktif'] = 0;
-        
-        foreach ($data['diklat_list'] as $diklat) {
-            $data['total_jadwal'] += $diklat['total_jadwal'];
-            if ($diklat['is_exist'] && $diklat['jadwal_aktif'] > 0) {
-                $data['diklat_aktif']++;
-            }
+        if (!$first_diklat) {
+            show_error('Tidak ada program diklat yang tersedia saat ini.');
         }
         
-        $this->load->view('frontend/pendaftaran_index', $data);
+        // Get first jadwal from this diklat
+        $first_jadwal = $this->db->get_where('scre_diklat_jadwal', [
+            'diklat_id' => $first_diklat->id,
+            'is_exist' => 1
+        ], 1)->row();
+        
+        if (!$first_jadwal) {
+            show_error('Tidak ada jadwal yang tersedia untuk program diklat ini.');
+        }
+        
+        // Redirect to form with jadwal_id and diklat_id
+        redirect('pendaftaran/form/' . $first_jadwal->id . '?diklat_id=' . $first_diklat->id);
     }
 
     // URL: /pendaftaran/{diklat_id}

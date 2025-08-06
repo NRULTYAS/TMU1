@@ -85,8 +85,13 @@ $route['translate_uri_dashes'] = FALSE;
 
 // Routing untuk pendaftaran dengan clean URLs
 $route['pendaftaran'] = 'Pendaftaran_New/index'; // /pendaftaran - redirect ke diklat pertama
+$route['pendaftaran/daftar'] = 'Pendaftaran_New/form_direct'; // /pendaftaran/daftar - langsung ke form
 $route['pendaftaran/([a-zA-Z0-9\-]+)'] = 'Pendaftaran_New/diklat/$1'; // /pendaftaran/{diklat_id}
 $route['pendaftaran/([a-zA-Z0-9\-]+)/([0-9]+)'] = 'Pendaftaran_New/periode/$1/$2'; // /pendaftaran/{diklat_id}/{periode}
+
+// Routing untuk registrasi user
+$route['daftar'] = 'login/register'; // /daftar - halaman registrasi user
+$route['register'] = 'login/register'; // /register - halaman registrasi user
 
 // API endpoints
 $route['api/jadwal/([a-zA-Z0-9\-]+)'] = 'Pendaftaran_New/api_jadwal/$1'; // API untuk get jadwal

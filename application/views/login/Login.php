@@ -5,6 +5,7 @@
     <title>Login - Portal Diklat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
@@ -49,6 +50,21 @@
                 <button type="submit" class="btn btn-primary">Masuk</button>
             </div>
         </form>
+        
+        <hr class="my-4">
+        
+        <div class="text-center">
+            <p class="mb-2">Belum punya akun?</p>
+            <a href="<?= base_url('daftar') ?>" class="btn btn-outline-primary">
+                <i class="fas fa-user-plus me-2"></i>Daftar Akun Baru
+            </a>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="<?= base_url() ?>" class="btn btn-link text-muted">
+                <i class="fas fa-home me-1"></i>Kembali ke Beranda
+            </a>
+        </div>
     </div>
 </div>
 

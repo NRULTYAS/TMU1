@@ -48,6 +48,28 @@ class Diklat_model extends CI_Model
         return $this->db->where('id', $id)->update($this->table, $data);
     }
 
+    // Get all diklat dengan informasi jadwal
+    public function get_all_diklat_with_jadwal()
+    {
+        $this->db->select('
+            d.id, 
+            d.nama_diklat, 
+            d.kode_diklat, 
+            d.is_exist,
+            d.check_kesehatan,
+            j.jenis_diklat,
+            COUNT(dj.id) as total_jadwal,
+            COUNT(CASE WHEN dj.is_exist = 1 THEN 1 END) as jadwal_aktif
+        ');
+        $this->db->from($this->table . ' d');
+        $this->db->join('scre_jenis_diklat j', 'j.id = d.jenis_diklat_id', 'left');
+        $this->db->join('scre_diklat_jadwal dj', 'dj.diklat_id = d.id', 'left');
+        $this->db->group_by('d.id');
+        $this->db->order_by('d.is_exist DESC, j.sorting ASC, d.kode_diklat ASC');
+        
+        return $this->db->get()->result_array();
+    }
+
     // Soft delete: hanya ubah is_exist = 0
     public function delete($id)
     {
@@ -149,5 +171,89 @@ class Diklat_model extends CI_Model
         $this->db->join('scre_persyaratan p', 'p.id = dp.persyaratan_id');
         $this->db->where('dp.diklat_id', $diklat_id);
         return $this->db->get()->result();
+    }
+
+    // Get diklat with registration status
+    public function get_filtered_with_status($kategori = null)
+    {
+        $this->db->select('d.*, j.jenis_diklat');
+        $this->db->from($this->table . ' d');
+        $this->db->join('scre_jenis_diklat j', 'j.id = d.jenis_diklat_id', 'left');
+        $this->db->where('d.is_exist', 1);
+        if ($kategori) {
+            $this->db->where('d.jenis_diklat_id', $kategori);
+        }
+        $this->db->order_by('j.sorting ASC, d.kode_diklat ASC');
+        $results = $this->db->get()->result();
+        
+        // Add status to each diklat
+        foreach ($results as $diklat) {
+            $diklat->status = $this->get_diklat_status($diklat->id);
+        }
+        
+        return $results;
+    }
+
+    // Get registration status for a specific diklat
+    public function get_diklat_status($diklat_id)
+    {
+        // Get active jadwal for this diklat
+        $this->db->select('*');
+        $this->db->from('scre_diklat_jadwal');
+        $this->db->where('diklat_id', $diklat_id);
+        $this->db->where('is_exist', 1);
+        $this->db->order_by('pendaftaran_mulai', 'ASC');
+        $jadwal_list = $this->db->get()->result();
+        
+        if (empty($jadwal_list)) {
+            return 'closed';
+        }
+        
+        // Use current date in Asia/Jakarta timezone
+        date_default_timezone_set('Asia/Jakarta');
+        $current_date = date('Y-m-d');
+        $status = 'closed';
+        $has_future_registration = false;
+        
+        foreach ($jadwal_list as $jadwal) {
+            // Skip if registration is disabled
+            if ($jadwal->is_daftar != 1) {
+                continue;
+            }
+            
+            if ($jadwal->pendaftaran_mulai && $jadwal->pendaftaran_akhir) {
+                // Compare dates using string comparison for accuracy
+                if ($current_date >= $jadwal->pendaftaran_mulai && $current_date <= $jadwal->pendaftaran_akhir) {
+                    // Registration is currently open
+                    return 'open';
+                } elseif ($current_date < $jadwal->pendaftaran_mulai) {
+                    // Registration will open in the future
+                    $has_future_registration = true;
+                    if ($status == 'closed') {
+                        $status = 'not_yet_open';
+                    }
+                } elseif ($current_date > $jadwal->pendaftaran_akhir) {
+                    // Registration has closed
+                    if ($jadwal->pelaksanaan_akhir && $current_date > $jadwal->pelaksanaan_akhir) {
+                        // Execution has also passed
+                        if ($status != 'open' && $status != 'not_yet_open') {
+                            $status = 'execution_passed';
+                        }
+                    } else {
+                        // Registration closed but execution not yet passed
+                        if ($status != 'open' && $status != 'not_yet_open') {
+                            $status = 'registration_closed';
+                        }
+                    }
+                }
+            }
+        }
+        
+        // If we found future registrations, prefer that status
+        if ($has_future_registration && $status == 'closed') {
+            $status = 'not_yet_open';
+        }
+        
+        return $status;
     }
 }

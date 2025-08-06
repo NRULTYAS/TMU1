@@ -153,12 +153,13 @@
                         <?php foreach ($diklat_programs as $program): ?>
                             <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
                                 <a href="<?= base_url('pendaftaran?diklat_id=' . $program->id) ?>" class="card program-card h-100 text-decoration-none">
-                                    <div class="card-body d-flex align-items-center justify-content-center p-3">
+                                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-3">
                                         <div class="text-center">
                                             <i class="fas fa-folder text-primary mb-2" style="font-size: 2.5rem;"></i>
-                                            <h6 class="mb-0 text-dark">
-                                                <?= htmlspecialchars($program->kode_diklat) ?>
+                                            <h6 class="mb-2 text-dark">
+                                                <?= htmlspecialchars($program->nama_diklat) ?>
                                             </h6>
+                                            <small class="text-muted"><?= htmlspecialchars($program->kode_diklat) ?></small>
                                         </div>
                                     </div>
                                 </a>
@@ -201,7 +202,10 @@
     </footer>
 
     <!-- Bootstrap JS -->
+        <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
     <script>
         function searchProgram() {
             const programSelect = document.getElementById('programSelect');

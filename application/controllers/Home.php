@@ -54,7 +54,7 @@ class Home extends CI_Controller {
         
         // Get diklat programs under this category
         $data['jenis_diklat'] = $jenis_diklat;
-        $data['diklat_programs'] = $this->Diklat_model->get_filtered($id);
+        $data['diklat_programs'] = $this->Diklat_model->get_filtered_with_status($id);
         $data['title'] = 'Detail ' . $jenis_diklat->jenis_diklat . ' - Portal Pendaftaran Diklat';
         
         $this->load->view('frontend/detail_jenis', $data);

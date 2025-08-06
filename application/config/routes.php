@@ -83,6 +83,14 @@ $route['home/detail_program/(:any)'] = 'home/detail_program/$1';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-// Routing untuk pendaftaran
-$route['pendaftaran'] = 'pendaftaran/index'; // Halaman pendaftaran
-$route['pendaftaran/form/(:any)'] = 'pendaftaran/form/$1 '; // Form pendaftaran dengan jadwal_id
+// Routing untuk pendaftaran dengan clean URLs
+$route['pendaftaran'] = 'Pendaftaran_New/index'; // /pendaftaran - redirect ke diklat pertama
+$route['pendaftaran/([a-zA-Z0-9\-]+)'] = 'Pendaftaran_New/diklat/$1'; // /pendaftaran/{diklat_id}
+$route['pendaftaran/([a-zA-Z0-9\-]+)/([0-9]+)'] = 'Pendaftaran_New/periode/$1/$2'; // /pendaftaran/{diklat_id}/{periode}
+
+// API endpoints
+$route['api/jadwal/([a-zA-Z0-9\-]+)'] = 'Pendaftaran_New/api_jadwal/$1'; // API untuk get jadwal
+
+// Legacy routing (backward compatibility)
+$route['pendaftaran/index/([a-zA-Z0-9\-]+)'] = 'Pendaftaran_New/diklat/$1'; // Old format support
+$route['pendaftaran/form/(:any)'] = 'pendaftaran/form/$1'; // Form pendaftaran dengan jadwal_id

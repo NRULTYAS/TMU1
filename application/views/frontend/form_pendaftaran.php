@@ -621,8 +621,8 @@
                             }
                             
                             // Update status dengan badge
-                            let statusText = 'Tertutup';
-                            let statusBadgeClass = 'bg-danger';
+                            let statusText = 'Dibuka';
+                            let statusBadgeClass = 'bg-success';
                             
                             if (info.status === 'open') {
                                 statusText = 'Terbuka';
